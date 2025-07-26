@@ -10,6 +10,9 @@ import { AlertsCard } from '@/components/dashboard/alerts-card'
 import { IncidentSummaryCard } from '@/components/dashboard/incident-summary-card'
 import { HeatmapCard } from '@/components/dashboard/heatmap-card'
 import { CameraFeedCard } from '@/components/dashboard/camera-feed-card'
+import { AppHeader } from '@/components/layout/app-header'
+import { AppSidebar } from '@/components/layout/app-sidebar'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
 export default function DashboardPage() {
     const [anomalies, setAnomalies] = useState<Anomaly[]>([])
@@ -94,41 +97,47 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="flex-1 p-4 md:p-6 lg:p-8">
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
-                <div className="grid col-span-1 lg:col-span-3 grid-cols-1 gap-6">
-                    <CameraFeedCard
-                        title="Main Stage"
-                        location="Concert Venue"
-                        videoSrc="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerCrowds.mp4"
-                        isLoading={isDetecting}
-                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Main Stage")}
-                    />
-                     <CameraFeedCard
-                        title="Upload Feed"
-                        location="Manual Analysis"
-                        videoSrc={null}
-                        isLoading={isDetecting}
-                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
-                    />
-                </div>
+        <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+                <AppHeader />
+                <main className="flex-1 p-4 md:p-6 lg:p-8">
+                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
+                        <div className="grid col-span-1 lg:col-span-3 grid-cols-1 gap-6">
+                            <CameraFeedCard
+                                title="Main Stage"
+                                location="Concert Venue"
+                                videoSrc="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerCrowds.mp4"
+                                isLoading={isDetecting}
+                                onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Main Stage")}
+                            />
+                            <CameraFeedCard
+                                title="Upload Feed"
+                                location="Manual Analysis"
+                                videoSrc={null}
+                                isLoading={isDetecting}
+                                onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
+                            />
+                        </div>
 
-                <div className="col-span-1 lg:col-span-2 row-start-3 lg:row-start-1 lg:col-start-4">
-                    <AlertsCard anomalies={anomalies} />
-                </div>
+                        <div className="col-span-1 lg:col-span-2 row-start-3 lg:row-start-1 lg:col-start-4">
+                            <AlertsCard anomalies={anomalies} />
+                        </div>
 
-                <div className="col-span-1 lg:col-span-3 row-start-2">
-                    <HeatmapCard />
-                </div>
+                        <div className="col-span-1 lg:col-span-3 row-start-2">
+                            <HeatmapCard />
+                        </div>
 
-                <div className="col-span-1 lg:col-span-2 row-start-4 lg:row-start-2">
-                    <IncidentSummaryCard
-                        summary={summary}
-                        isLoading={isSummarizing}
-                        onSummarize={handleSummarizeIncident}
-                    />
-                </div>
-            </div>
-        </div>
+                        <div className="col-span-1 lg:col-span-2 row-start-4 lg:row-start-2">
+                            <IncidentSummaryCard
+                                summary={summary}
+                                isLoading={isSummarizing}
+                                onSummarize={handleSummarizeIncident}
+                            />
+                        </div>
+                    </div>
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
     )
 }
