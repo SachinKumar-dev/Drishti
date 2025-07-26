@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,6 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+type GridCell = {
+  color: string;
+  opacity: number;
+};
+
 const HeatmapFlexGrid = () => {
   const rows = 10;
   const cols = 24;
@@ -18,8 +24,10 @@ const HeatmapFlexGrid = () => {
     'bg-sky-200', 'bg-teal-300', 'bg-yellow-300', 'bg-orange-400', 'bg-red-500'
   ];
 
-  const gridData = useMemo(() => {
-    return Array.from({ length: rows }).map(() =>
+  const [gridData, setGridData] = useState<GridCell[][]>([]);
+
+  useEffect(() => {
+    const data = Array.from({ length: rows }).map(() =>
       Array.from({ length: cols }).map(() => {
         const randomColorIndex = Math.floor(Math.pow(Math.random(), 2.5) * colors.length);
         const randomOpacity = Math.random() * 0.6 + 0.4;
@@ -29,7 +37,26 @@ const HeatmapFlexGrid = () => {
         };
       })
     );
-  }, [colors]); // `colors` is stable, so this runs once
+    setGridData(data);
+  }, []); // Empty dependency array ensures this runs once on the client after mount
+
+  if (gridData.length === 0) {
+    // Render a placeholder or skeleton while waiting for client-side generation
+    return (
+      <div className="flex flex-col gap-px w-full h-full aspect-[2/1] bg-muted/20 p-1 rounded-md">
+        {Array.from({ length: rows }).map((_, rIndex) => (
+          <div key={rIndex} className="flex flex-1 gap-px">
+            {Array.from({ length: cols }).map((_, cIndex) => (
+              <div
+                key={cIndex}
+                className="flex-1 rounded-sm bg-muted/50"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-px w-full h-full aspect-[2/1] bg-muted/20 p-1 rounded-md">
