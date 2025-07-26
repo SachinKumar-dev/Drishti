@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useCallback } from 'react'
-import { detectAnomalies } from "@/ai/flows/detect-anomalies"
+import { manageCrowdIncident } from "@/ai/flows/manage-crowd-incident"
 import { summarizeIncident } from "@/ai/flows/summarize-incident"
 import type { Anomaly, IncidentSummary } from '@/lib/types'
 import { useToast } from "@/hooks/use-toast"
@@ -35,13 +35,13 @@ export function DashboardPage() {
         }
         setIsDetecting(true);
         try {
-            const result = await detectAnomalies({ cameraFeedDataUri });
+            const result = await manageCrowdIncident({ cameraFeedDataUri });
             if (result.anomalies.length > 0) {
                 // Prepend new anomalies to the list
                 setAnomalies(prev => [...result.anomalies, ...prev].slice(0, 50)); // Keep last 50 anomalies
                 toast({
                     title: 'Anomaly Detected!',
-                    description: `${result.anomalies.map(a => a.type).join(', ')}.`,
+                    description: result.summary,
                 });
             } else {
                  toast({

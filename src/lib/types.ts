@@ -1,5 +1,5 @@
-import type { DetectAnomaliesOutput } from "@/ai/flows/detect-anomalies";
+import type { ManageCrowdIncidentOutput } from "@/ai/flows/manage-crowd-incident";
 import type { SummarizeIncidentOutput } from "@/ai/flows/summarize-incident";
 
-export type Anomaly = DetectAnomaliesOutput['anomalies'][number];
+export type Anomaly = ManageCrowdIncidentOutput['anomalies'][number];
 export type IncidentSummary = SummarizeIncidentOutput;
