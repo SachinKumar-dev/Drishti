@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScanSearch, Loader2, VideoOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,6 +31,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
   const { toast } = useToast();
 
   useEffect(() => {
+    let stream: MediaStream | null = null;
     const getCameraPermission = async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error("Camera API not available.");
@@ -44,7 +44,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
         return;
       }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -56,6 +56,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
           variant: 'destructive',
           title: 'Camera Access Denied',
           description: 'Please enable camera permissions in your browser settings to use this app.',
+          duration: 10000,
         });
       }
     };
@@ -63,10 +64,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
     getCameraPermission();
 
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
+      stream?.getTracks().forEach(track => track.stop());
       if (analysisIntervalRef.current) {
         clearInterval(analysisIntervalRef.current);
       }
@@ -101,7 +99,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
   };
 
   useEffect(() => {
-    if (isRealtime && hasCameraPermission && !isLoading) {
+    if (isRealtime && hasCameraPermission) {
       analysisIntervalRef.current = setInterval(() => {
         const dataUri = captureFrame();
         if (dataUri) {
@@ -119,7 +117,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, [isRealtime, hasCameraPermission, isLoading, onAnalyze, captureFrame]);
+  }, [isRealtime, hasCameraPermission, onAnalyze, captureFrame]);
 
 
   return (
@@ -135,12 +133,13 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md text-white p-4">
               <VideoOff className="h-10 w-10 mb-2" />
               <p className="text-center font-semibold">Camera access denied</p>
-              <p className="text-center text-sm">Please enable camera access in your browser settings.</p>
+              <p className="text-center text-sm">Please enable camera access in your browser settings and refresh the page.</p>
             </div>
           )}
           {hasCameraPermission === null && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md text-white p-4">
               <Loader2 className="h-10 w-10 animate-spin" />
+              <p className="mt-2 text-sm">Waiting for camera permission...</p>
             </div>
           )}
         </div>
