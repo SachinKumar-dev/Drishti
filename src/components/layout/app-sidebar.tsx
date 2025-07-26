@@ -1,5 +1,8 @@
+
 "use client"
 
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import {
   Home,
   Video,
@@ -21,15 +24,17 @@ import {
 import { Logo } from "@/components/icons/logo"
 
 const links = [
-  { label: "Dashboard", icon: Home, active: true },
-  { label: "Cameras", icon: Video },
-  { label: "Incidents", icon: ShieldAlert },
-  { label: "Reports", icon: FileText },
-  { label: "Team", icon: Users },
-  { label: "Settings", icon: Settings },
+  { label: "Dashboard", icon: Home, href: "/dashboard" },
+  { label: "Cameras", icon: Video, href: "/cameras" },
+  { label: "Incidents", icon: ShieldAlert, href: "/incidents" },
+  { label: "Reports", icon: FileText, href: "/reports" },
+  { label: "Team", icon: Users, href: "/team" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function AppSidebar() {
+  const pathname = usePathname()
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
@@ -42,14 +47,16 @@ export function AppSidebar() {
         <SidebarMenu>
           {links.map((link) => (
             <SidebarMenuItem key={link.label}>
-              <SidebarMenuButton
-                isActive={link.active}
-                tooltip={{ children: link.label }}
-                className="justify-start"
-              >
-                <link.icon className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden transition-all duration-300">{link.label}</span>
-              </SidebarMenuButton>
+              <Link href={link.href} passHref>
+                <SidebarMenuButton
+                  isActive={pathname.startsWith(link.href)}
+                  tooltip={{ children: link.label }}
+                  className="justify-start"
+                >
+                  <link.icon className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden transition-all duration-300">{link.label}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
