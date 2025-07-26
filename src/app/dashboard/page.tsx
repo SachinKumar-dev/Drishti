@@ -6,17 +6,10 @@ import { manageCrowdIncident } from "@/ai/flows/manage-crowd-incident"
 import { summarizeIncident } from "@/ai/flows/summarize-incident"
 import type { Anomaly, IncidentSummary } from '@/lib/types'
 import { useToast } from "@/hooks/use-toast"
-import { CameraFeedCard } from '@/components/dashboard/camera-feed-card'
 import { UploadFeedCard } from '@/components/dashboard/upload-feed-card'
 import { AlertsCard } from '@/components/dashboard/alerts-card'
 import { IncidentSummaryCard } from '@/components/dashboard/incident-summary-card'
 import { HeatmapCard } from '@/components/dashboard/heatmap-card'
-
-// Placeholder video URLs. Replace with your actual video sources.
-const videoSources = [
-    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerCrowds.mp4",
-    "https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
-]
 
 export default function DashboardPage() {
     const [anomalies, setAnomalies] = useState<Anomaly[]>([])
@@ -103,29 +96,13 @@ export default function DashboardPage() {
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
-                <div className="grid col-span-1 lg:col-span-3 grid-cols-1 sm:grid-cols-2 gap-6">
-                    <CameraFeedCard
-                        title="Main Stage - Cam 01"
-                        location="Sector A"
-                        videoSrc={videoSources[0]}
+                <div className="grid col-span-1 lg:col-span-3 grid-cols-1 gap-6">
+                    <UploadFeedCard
+                        title="Upload a Video Feed"
+                        location="Manual Analysis"
                         isLoading={isDetecting}
-                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Sector A")}
+                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
                     />
-                    <CameraFeedCard
-                        title="East Gate - Cam 02"
-                        location="Sector B"
-                        videoSrc={videoSources[1]}
-                        isLoading={isDetecting}
-                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Sector B")}
-                    />
-                     <div className="sm:col-span-2">
-                        <UploadFeedCard
-                            title="Upload a Video Feed"
-                            location="Manual Analysis"
-                            isLoading={isDetecting}
-                            onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
-                        />
-                    </div>
                 </div>
 
                 <div className="col-span-1 lg:col-span-2 row-start-3 lg:row-start-1 lg:col-start-4">
