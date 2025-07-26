@@ -11,6 +11,7 @@ import {
   Users,
   Settings,
   LogOut,
+  QrCode,
 } from "lucide-react"
 import {
   Sidebar,
@@ -28,6 +29,7 @@ const links = [
   { label: "Cameras", icon: Video, href: "/cameras" },
   { label: "Incidents", icon: ShieldAlert, href: "/incidents" },
   { label: "Reports", icon: FileText, href: "/reports" },
+  { label: "QR Alert", icon: QrCode, href: "/qr-alert" },
   { label: "Team", icon: Users, href: "/team" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
