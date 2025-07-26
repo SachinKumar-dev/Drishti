@@ -7,6 +7,7 @@ import { summarizeIncident } from "@/ai/flows/summarize-incident"
 import type { Anomaly, IncidentSummary } from '@/lib/types'
 import { useToast } from "@/hooks/use-toast"
 import { CameraFeedCard } from '@/components/dashboard/camera-feed-card'
+import { UploadFeedCard } from '@/components/dashboard/upload-feed-card'
 import { AlertsCard } from '@/components/dashboard/alerts-card'
 import { IncidentSummaryCard } from '@/components/dashboard/incident-summary-card'
 import { HeatmapCard } from '@/components/dashboard/heatmap-card'
@@ -117,17 +118,25 @@ export default function DashboardPage() {
                         isLoading={isDetecting}
                         onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Sector B")}
                     />
+                     <div className="sm:col-span-2">
+                        <UploadFeedCard
+                            title="Upload a Video Feed"
+                            location="Manual Analysis"
+                            isLoading={isDetecting}
+                            onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
+                        />
+                    </div>
                 </div>
 
-                <div className="col-span-1 lg:col-span-2 row-start-2 lg:row-start-1 lg:col-start-4">
+                <div className="col-span-1 lg:col-span-2 row-start-3 lg:row-start-1 lg:col-start-4">
                     <AlertsCard anomalies={anomalies} />
                 </div>
 
-                <div className="col-span-1 lg:col-span-3">
+                <div className="col-span-1 lg:col-span-3 row-start-2">
                     <HeatmapCard />
                 </div>
 
-                <div className="col-span-1 lg:col-span-2">
+                <div className="col-span-1 lg:col-span-2 row-start-4 lg:row-start-2">
                     <IncidentSummaryCard
                         summary={summary}
                         isLoading={isSummarizing}
