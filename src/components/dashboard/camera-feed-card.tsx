@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 interface CameraFeedCardProps {
   title: string;
   location: string;
-  videoSrc: string;
+  videoSrc: string | null;
   isLoading: boolean;
   onAnalyze: (dataUri: string) => void;
 }
@@ -81,6 +81,14 @@ export function CameraFeedCard({ title, location, videoSrc: defaultVideoSrc, isL
     if (dataUri) {
       onAnalyze(dataUri);
     } else {
+       if (!file && !defaultVideoSrc) {
+         toast({
+            variant: "destructive",
+            title: "No Video Selected",
+            description: "Please upload a video file to analyze.",
+          });
+          return;
+       }
       toast({
         variant: "destructive",
         title: "Error",
@@ -89,21 +97,9 @@ export function CameraFeedCard({ title, location, videoSrc: defaultVideoSrc, isL
     }
   };
   
-  const handleAnalyzeUploadClick = () => {
-    if (!file && !defaultVideoSrc) {
-      toast({
-        variant: "destructive",
-        title: "No Video Selected",
-        description: "Please upload a video file to analyze.",
-      });
-      return;
-    }
-    handleAnalyzeClick()
-  }
-
 
   useEffect(() => {
-    if (isRealtime && !isLoading && !file) { // Only run interval for default video
+    if (isRealtime && !isLoading && !file && defaultVideoSrc) { // Only run interval for default video
       analysisIntervalRef.current = setInterval(() => {
         handleAnalyzeClick();
       }, 5000); 
@@ -118,11 +114,11 @@ export function CameraFeedCard({ title, location, videoSrc: defaultVideoSrc, isL
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, [isRealtime, isLoading, file, handleAnalyzeClick]);
+  }, [isRealtime, isLoading, file, handleAnalyzeClick, defaultVideoSrc]);
   
-  // Reset to default when file is cleared (although there's no UI to clear it)
+  // Reset to default when file is cleared
   useEffect(() => {
-    if (!file) {
+     if (!file) {
       setVideoSrc(defaultVideoSrc);
     }
   }, [file, defaultVideoSrc]);
@@ -161,14 +157,16 @@ export function CameraFeedCard({ title, location, videoSrc: defaultVideoSrc, isL
       </CardContent>
       <CardFooter className="flex-col sm:flex-row gap-4 items-center justify-between">
          <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="video-upload" className="sr-only">Upload Video</Label>
-          <Input id="video-upload" type="file" accept="video/*" onChange={handleFileChange} className="cursor-pointer"/>
+          <Label htmlFor={`video-upload-${title}`} className="sr-only">Upload Video</Label>
+          <Input id={`video-upload-${title}`} type="file" accept="video/*" onChange={handleFileChange} className="cursor-pointer"/>
         </div>
-        <div className="flex items-center space-x-2">
-          <Switch id={`realtime-switch-${title}`} checked={isRealtime} onCheckedChange={setIsRealtime} disabled={isLoading || !!file} />
-          <Label htmlFor={`realtime-switch-${title}`}>Real-time</Label>
-        </div>
-        <Button onClick={handleAnalyzeUploadClick} disabled={isLoading || (isRealtime && !file)} className="w-full sm:w-auto">
+        {defaultVideoSrc && (
+            <div className="flex items-center space-x-2">
+                <Switch id={`realtime-switch-${title}`} checked={isRealtime} onCheckedChange={setIsRealtime} disabled={isLoading || !!file} />
+                <Label htmlFor={`realtime-switch-${title}`}>Real-time</Label>
+            </div>
+        )}
+        <Button onClick={handleAnalyzeClick} disabled={isLoading || (isRealtime && !file)} className="w-full sm:w-auto">
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

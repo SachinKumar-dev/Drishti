@@ -104,6 +104,13 @@ export default function DashboardPage() {
                         isLoading={isDetecting}
                         onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Main Stage")}
                     />
+                     <CameraFeedCard
+                        title="Upload Feed"
+                        location="Manual Analysis"
+                        videoSrc={null}
+                        isLoading={isDetecting}
+                        onAnalyze={(dataUri) => handleDetectAnomalies(dataUri, "Uploaded Feed")}
+                    />
                 </div>
 
                 <div className="col-span-1 lg:col-span-2 row-start-3 lg:row-start-1 lg:col-start-4">
