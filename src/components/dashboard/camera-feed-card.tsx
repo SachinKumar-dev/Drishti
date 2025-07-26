@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScanSearch, Loader2, VideoOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface CameraFeedCardProps {
   title: string;
@@ -31,26 +32,27 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
   const { toast } = useToast();
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
     const getCameraPermission = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error("Camera API not available.");
+      // Ensure we're on the client-side
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('Camera API is not available in this environment.');
         setHasCameraPermission(false);
         toast({
-          variant: "destructive",
-          title: "Camera Not Supported",
-          description: "Your browser does not support camera access.",
+          variant: 'destructive',
+          title: 'Camera Not Supported',
+          description: 'Your browser does not support camera access.',
         });
         return;
       }
+
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-        setHasCameraPermission(true);
       } catch (error) {
-        console.error("Error accessing camera:", error);
+        console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
         toast({
           variant: 'destructive',
@@ -64,7 +66,10 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
     getCameraPermission();
 
     return () => {
-      stream?.getTracks().forEach(track => track.stop());
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
       if (analysisIntervalRef.current) {
         clearInterval(analysisIntervalRef.current);
       }
@@ -143,6 +148,15 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
             </div>
           )}
         </div>
+        {hasCameraPermission === false && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertTitle>Camera Access Required</AlertTitle>
+              <AlertDescription>
+                Please allow camera access to use this feature. You may need to
+                grant permissions in your browser's settings.
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
       <CardFooter className="flex-col sm:flex-row gap-4 items-center">
         <div className="flex items-center space-x-2">
