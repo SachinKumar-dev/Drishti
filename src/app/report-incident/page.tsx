@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,9 +22,9 @@ const reportIncidentSchema = z.object({
   location: z.string().optional(),
 });
 
-type ReportIncidentForm = z.infer<typeof reportIncidentSchema>;
+type ReportIncidentFormValues = z.infer<typeof reportIncidentSchema>;
 
-function ReportIncidentFormContent() {
+function ReportIncidentForm() {
     const searchParams = useSearchParams();
     const userNameFromQr = searchParams.get('userName') || "";
 
@@ -33,7 +33,7 @@ function ReportIncidentFormContent() {
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const { toast } = useToast();
 
-    const form = useForm<ReportIncidentForm>({
+    const form = useForm<ReportIncidentFormValues>({
         resolver: zodResolver(reportIncidentSchema),
         defaultValues: {
         name: userNameFromQr,
@@ -76,7 +76,7 @@ function ReportIncidentFormContent() {
         }
     };
 
-    const onSubmit: SubmitHandler<ReportIncidentForm> = async (data) => {
+    const onSubmit: SubmitHandler<ReportIncidentFormValues> = async (data) => {
         setIsLoading(true);
         try {
         const result = await reportIncident({
@@ -101,6 +101,21 @@ function ReportIncidentFormContent() {
         }
     };
 
+    if (isSubmitted) {
+        return (
+            <Card className="w-full max-w-lg">
+                <CardHeader>
+                     <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>Report an Incident</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center text-center p-10">
+                    <Send className="h-16 w-16 text-green-500 mb-4" />
+                    <h2 className="text-2xl font-bold mb-2">Alert Sent</h2>
+                    <p className="text-muted-foreground">Security has been notified and is on the way. If this is a medical emergency, please do not move the person.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
     return (
         <Card className="w-full max-w-lg">
             <CardHeader>
@@ -109,13 +124,6 @@ function ReportIncidentFormContent() {
                 Your report will be sent to the nearest security personnel. Please provide as much detail as possible.
             </CardDescription>
             </CardHeader>
-            {isSubmitted ? (
-                <CardContent className="flex flex-col items-center justify-center text-center p-10">
-                    <Send className="h-16 w-16 text-green-500 mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Alert Sent</h2>
-                    <p className="text-muted-foreground">Security has been notified and is on the way. If this is a medical emergency, please do not move the person.</p>
-                </CardContent>
-            ) : (
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
@@ -182,10 +190,18 @@ function ReportIncidentFormContent() {
                 </CardFooter>
             </form>
             </Form>
-            )}
         </Card>
     )
 }
+
+function ReportIncidentPageContent() {
+    return (
+        <Suspense fallback={<Card className="w-full max-w-lg h-[500px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></Card>}>
+            <ReportIncidentForm />
+        </Suspense>
+    )
+}
+
 
 export default function ReportIncidentPage() {
     return (
@@ -194,10 +210,7 @@ export default function ReportIncidentPage() {
                 <Logo className="h-8 w-8 text-primary" />
                 <span className="font-semibold text-lg">SentinelAI</span>
             </div>
-            <React.Suspense fallback={<div>Loading...</div>}>
-                <ReportIncidentFormContent />
-            </React.Suspense>
+            <ReportIncidentPageContent />
         </div>
     );
 }
-
