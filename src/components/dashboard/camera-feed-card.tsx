@@ -13,71 +13,25 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ScanSearch, Loader2, VideoOff } from "lucide-react";
+import { ScanSearch, Loader2, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface CameraFeedCardProps {
   title: string;
   location: string;
+  videoSrc: string;
   isLoading: boolean;
   onAnalyze: (dataUri: string) => void;
 }
 
-export function CameraFeedCard({ title, location, isLoading, onAnalyze }: CameraFeedCardProps) {
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+export function CameraFeedCard({ title, location, videoSrc, isLoading, onAnalyze }: CameraFeedCardProps) {
   const [isRealtime, setIsRealtime] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      // Ensure we're on the client-side
-      if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error('Camera API is not available in this environment.');
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Not Supported',
-          description: 'Your browser does not support camera access.',
-        });
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasCameraPermission(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this app.',
-          duration: 10000,
-        });
-      }
-    };
-
-    getCameraPermission();
-
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
-      if (analysisIntervalRef.current) {
-        clearInterval(analysisIntervalRef.current);
-      }
-    };
-  }, [toast]);
-
   const captureFrame = useCallback(() => {
-    if (videoRef.current && videoRef.current.readyState >= 2) {
+    if (videoRef.current) {
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
@@ -98,13 +52,13 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not capture frame from video feed. The camera may still be initializing.",
+        description: "Could not capture frame from video feed.",
       });
     }
   };
 
   useEffect(() => {
-    if (isRealtime && hasCameraPermission) {
+    if (isRealtime) {
       analysisIntervalRef.current = setInterval(() => {
         const dataUri = captureFrame();
         if (dataUri) {
@@ -122,7 +76,7 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, [isRealtime, hasCameraPermission, onAnalyze, captureFrame]);
+  }, [isRealtime, onAnalyze, captureFrame]);
 
 
   return (
@@ -133,37 +87,18 @@ export function CameraFeedCard({ title, location, isLoading, onAnalyze }: Camera
       </CardHeader>
       <CardContent className="flex-grow flex flex-col items-center justify-center bg-muted/50 rounded-md m-6 mt-0">
         <div className="aspect-video w-full relative">
-          <video ref={videoRef} className="w-full h-full object-cover rounded-md" autoPlay muted playsInline />
-          {hasCameraPermission === false && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md text-white p-4">
-              <VideoOff className="h-10 w-10 mb-2" />
-              <p className="text-center font-semibold">Camera access denied</p>
-              <p className="text-center text-sm">Please enable camera access in your browser settings and refresh the page.</p>
-            </div>
-          )}
-          {hasCameraPermission === null && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md text-white p-4">
-              <Loader2 className="h-10 w-10 animate-spin" />
-              <p className="mt-2 text-sm">Waiting for camera permission...</p>
-            </div>
-          )}
+          <video ref={videoRef} className="w-full h-full object-cover rounded-md" loop muted autoPlay playsInline key={videoSrc}>
+            <source src={videoSrc} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
-        {hasCameraPermission === false && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertTitle>Camera Access Required</AlertTitle>
-              <AlertDescription>
-                Please allow camera access to use this feature. You may need to
-                grant permissions in your browser's settings.
-              </AlertDescription>
-            </Alert>
-          )}
       </CardContent>
       <CardFooter className="flex-col sm:flex-row gap-4 items-center">
         <div className="flex items-center space-x-2">
-          <Switch id={`realtime-switch-${title}`} checked={isRealtime} onCheckedChange={setIsRealtime} disabled={!hasCameraPermission || isLoading} />
+          <Switch id={`realtime-switch-${title}`} checked={isRealtime} onCheckedChange={setIsRealtime} disabled={isLoading} />
           <Label htmlFor={`realtime-switch-${title}`}>Real-time</Label>
         </div>
-        <Button onClick={handleAnalyzeClick} disabled={isLoading || !hasCameraPermission || isRealtime} className="w-full sm:w-auto">
+        <Button onClick={handleAnalyzeClick} disabled={isLoading || isRealtime} className="w-full sm:w-auto">
           {isLoading && !isRealtime ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

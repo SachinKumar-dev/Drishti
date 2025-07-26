@@ -11,6 +11,12 @@ import { AlertsCard } from './alerts-card'
 import { IncidentSummaryCard } from './incident-summary-card'
 import { HeatmapCard } from './heatmap-card'
 
+// Placeholder video URLs. Replace with your actual video sources.
+const videoSources = [
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerCrowds.mp4",
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+]
+
 export function DashboardPage() {
     const [anomalies, setAnomalies] = useState<Anomaly[]>([])
     const [summary, setSummary] = useState<IncidentSummary | null>(null)
@@ -31,10 +37,16 @@ export function DashboardPage() {
         try {
             const result = await detectAnomalies({ cameraFeedDataUri });
             if (result.anomalies.length > 0) {
-                setAnomalies(prev => [...result.anomalies, ...prev]);
+                // Prepend new anomalies to the list
+                setAnomalies(prev => [...result.anomalies, ...prev].slice(0, 50)); // Keep last 50 anomalies
                 toast({
                     title: 'Anomaly Detected!',
-                    description: `${result.anomalies.length} new anomalies detected.`,
+                    description: `${result.anomalies.map(a => a.type).join(', ')}.`,
+                });
+            } else {
+                 toast({
+                    title: 'Analysis Complete',
+                    description: `No new anomalies detected.`,
                 });
             }
         } catch (error) {
@@ -51,16 +63,20 @@ export function DashboardPage() {
 
     const handleSummarizeIncident = async () => {
         setIsSummarizing(true);
-        // Mock data for incident summarization
-        const mockIncidentData = {
-            cameraFeed: "Crowd density increasing rapidly near the main stage. Some individuals are climbing barriers.",
-            sensorData: "Loud noise detected at 10:32 PM. Temperature spike in Zone 3.",
-            userReports: "User reports smoke near the food court. Another user reports a lost child near Gate B.",
-            timeline: "10:30 PM: Crowd surge begins. 10:32 PM: Loud bang. 10:33 PM: Smoke reported."
+        
+        const anomaliesSummary = anomalies.length > 0 
+            ? `Detected anomalies include: ${[...new Set(anomalies.map(a => a.type))].join(', ')}.`
+            : "No specific anomalies detected in the recent feeds.";
+
+        const incidentData = {
+            cameraFeed: anomaliesSummary,
+            sensorData: "Crowd density metrics are stable. No unusual audio spikes.",
+            userReports: "No new user reports in the last 15 minutes.",
+            timeline: `Analysis performed at ${new Date().toLocaleTimeString()}.`
         };
 
         try {
-            const result = await summarizeIncident(mockIncidentData);
+            const result = await summarizeIncident(incidentData);
             setSummary(result);
             toast({
                 title: 'Incident Summary Generated',
@@ -84,12 +100,14 @@ export function DashboardPage() {
                 <CameraFeedCard
                     title="Main Stage - Cam 01"
                     location="Sector A"
+                    videoSrc={videoSources[0]}
                     isLoading={isDetecting}
                     onAnalyze={handleDetectAnomalies}
                 />
                 <CameraFeedCard
                     title="East Gate - Cam 02"
                     location="Sector B"
+                    videoSrc={videoSources[1]}
                     isLoading={isDetecting}
                     onAnalyze={handleDetectAnomalies}
                 />
@@ -113,4 +131,3 @@ export function DashboardPage() {
         </div>
     )
 }
-
