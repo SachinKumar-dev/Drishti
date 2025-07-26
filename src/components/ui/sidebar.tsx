@@ -32,7 +32,7 @@ type SidebarContext = {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  isMobile: boolean
+  isMobile: boolean | undefined
   toggleSidebar: () => void
 }
 
@@ -175,7 +175,12 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     if (collapsible === "none") {
       return (
@@ -190,6 +195,29 @@ const Sidebar = React.forwardRef<
           {children}
         </div>
       )
+    }
+
+    // Render a skeleton on the server and on the initial client render
+    if (!isMounted || isMobile === undefined) {
+      return (
+        <div
+          className={cn(
+            "group peer hidden md:block text-sidebar-foreground",
+            className
+          )}
+          data-state={state}
+          data-collapsible={state === 'collapsed' ? collapsible : ''}
+          data-variant={variant}
+          data-side={side}
+        >
+          <div
+            className={cn(
+              "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+              "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+            )}
+          />
+        </div>
+      );
     }
 
     if (isMobile) {
@@ -583,7 +611,7 @@ const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile}
+          hidden={state !== "collapsed" || isMobile === true}
           {...tooltip}
         />
       </Tooltip>
