@@ -15,7 +15,7 @@ import { HeatmapCard } from '@/components/dashboard/heatmap-card'
 // Placeholder video URLs. Replace with your actual video sources.
 const videoSources = [
     "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerCrowds.mp4",
-    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
 ]
 
 export default function DashboardPage() {
