@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { detectAnomalies } from "@/ai/flows/detect-anomalies"
 import { summarizeIncident } from "@/ai/flows/summarize-incident"
 import type { Anomaly, IncidentSummary } from '@/lib/types'
@@ -17,23 +18,25 @@ export function DashboardPage() {
     const [isSummarizing, setIsSummarizing] = useState(false)
     const { toast } = useToast()
 
-    const handleDetectAnomalies = async (cameraFeedDataUri: string) => {
+    const handleDetectAnomalies = useCallback(async (cameraFeedDataUri: string) => {
         if (!cameraFeedDataUri) {
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Please select an image file first.',
+                description: 'Could not get camera feed.',
             });
             return;
         }
         setIsDetecting(true);
         try {
             const result = await detectAnomalies({ cameraFeedDataUri });
-            setAnomalies(prev => [...result.anomalies, ...prev]);
-            toast({
-                title: 'Analysis Complete',
-                description: `${result.anomalies.length} new anomalies detected.`,
-            });
+            if (result.anomalies.length > 0) {
+                setAnomalies(prev => [...result.anomalies, ...prev]);
+                toast({
+                    title: 'Anomaly Detected!',
+                    description: `${result.anomalies.length} new anomalies detected.`,
+                });
+            }
         } catch (error) {
             console.error('Error detecting anomalies:', error);
             toast({
@@ -44,7 +47,7 @@ export function DashboardPage() {
         } finally {
             setIsDetecting(false);
         }
-    };
+    }, [toast]);
 
     const handleSummarizeIncident = async () => {
         setIsSummarizing(true);
@@ -110,3 +113,4 @@ export function DashboardPage() {
         </div>
     )
 }
+
