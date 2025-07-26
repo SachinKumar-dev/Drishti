@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -17,8 +17,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Anomaly } from "@/lib/types";
 
-// Mock data for incidents - in a real app, this would come from a state management solution or API
-const mockIncidents: (Anomaly & { id: string; timestamp: string; status: string; })[] = [
+type Incident = Anomaly & { id: string; timestamp: string; status: string; };
+
+// Function to generate mock data. This will be called on the client.
+const generateMockIncidents = (): Incident[] => [
   { id: 'inc-1', type: 'Crowd Surge', confidence: 0.95, location: 'Sector A', severity: 'High', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(), status: 'Active' },
   { id: 'inc-2', type: 'Smoke', confidence: 0.82, location: 'Sector B', severity: 'Medium', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), status: 'Active' },
   { id: 'inc-3', type: 'Medical Emergency', confidence: 0.98, location: 'Sector A', severity: 'High', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(), status: 'Resolved' },
@@ -27,7 +29,12 @@ const mockIncidents: (Anomaly & { id: string; timestamp: string; status: string;
 
 
 export default function IncidentsPage() {
-  const [incidents] = useState(mockIncidents);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+
+  useEffect(() => {
+    // Generate incidents on the client-side to avoid hydration mismatch
+    setIncidents(generateMockIncidents());
+  }, []);
 
   const getSeverityVariant = (severity: string): "destructive" | "secondary" | "default" | "outline" | null | undefined => {
     switch (severity.toLowerCase()) {
