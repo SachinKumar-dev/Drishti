@@ -12,13 +12,15 @@ import { QrCode } from 'lucide-react';
 
 export default function QrAlertPage() {
   const [qrValue, setQrValue] = useState('');
+  // In a real app, this would come from an authentication context.
+  const user = { name: "Admin User" }; 
 
   useEffect(() => {
-    // In a real app, this would be a dynamic URL, maybe pointing to a specific user or event.
-    // For this prototype, we'll use a static URL to the report page.
-    const reportUrl = `${window.location.origin}/report-incident`;
-    setQrValue(reportUrl);
-  }, []);
+    if (typeof window !== 'undefined') {
+      const reportUrl = `${window.location.origin}/report-incident?userName=${encodeURIComponent(user.name)}`;
+      setQrValue(reportUrl);
+    }
+  }, [user.name]);
 
   const downloadQRCode = () => {
     const canvas = document.querySelector<HTMLCanvasElement>(".qr-code-canvas");
@@ -28,7 +30,7 @@ export default function QrAlertPage() {
         .replace("image/png", "image/octet-stream");
       let downloadLink = document.createElement("a");
       downloadLink.href = pngUrl;
-      downloadLink.download = "sentinelai-alert-qr.png";
+      downloadLink.download = `sentinelai-alert-qr-${user.name}.png`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
@@ -43,9 +45,9 @@ export default function QrAlertPage() {
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
-              <CardTitle>QR Code Alert System</CardTitle>
+              <CardTitle>Your Unique QR Code</CardTitle>
               <CardDescription>
-                Display this QR code at various points in your venue. Users can scan it to discreetly report an incident and share their location.
+                This QR code is unique to {user.name}. Display this at your location for users to scan and report incidents directly.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center gap-8">
