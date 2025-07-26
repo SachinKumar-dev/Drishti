@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ScanSearch, Loader2, Video } from "lucide-react";
+import { ScanSearch, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CameraFeedCardProps {
@@ -31,18 +31,29 @@ export function CameraFeedCard({ title, location, videoSrc, isLoading, onAnalyze
   const { toast } = useToast();
 
   const captureFrame = useCallback(() => {
-    if (videoRef.current) {
+    const video = videoRef.current;
+    if (video && video.readyState >= 2) { // Ensure video has enough data to play
       const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL("image/jpeg");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        try {
+            return canvas.toDataURL("image/jpeg");
+        } catch (error) {
+            console.error("Error converting canvas to data URL:", error);
+            toast({
+                variant: "destructive",
+                title: "Capture Error",
+                description: "Could not capture frame. The video source might have security restrictions (CORS).",
+            });
+            return null;
+        }
       }
     }
     return null;
-  }, []);
+  }, [toast]);
 
   const handleAnalyzeClick = () => {
     const dataUri = captureFrame();
@@ -52,18 +63,15 @@ export function CameraFeedCard({ title, location, videoSrc, isLoading, onAnalyze
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not capture frame from video feed.",
+        description: "Could not capture frame from video feed. The video may not be loaded yet.",
       });
     }
   };
 
   useEffect(() => {
-    if (isRealtime) {
+    if (isRealtime && !isLoading) {
       analysisIntervalRef.current = setInterval(() => {
-        const dataUri = captureFrame();
-        if (dataUri) {
-          onAnalyze(dataUri);
-        }
+        handleAnalyzeClick();
       }, 5000); // Analyze every 5 seconds
     } else {
       if (analysisIntervalRef.current) {
@@ -76,7 +84,7 @@ export function CameraFeedCard({ title, location, videoSrc, isLoading, onAnalyze
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, [isRealtime, onAnalyze, captureFrame]);
+  }, [isRealtime, isLoading, handleAnalyzeClick]);
 
 
   return (
@@ -87,8 +95,16 @@ export function CameraFeedCard({ title, location, videoSrc, isLoading, onAnalyze
       </CardHeader>
       <CardContent className="flex-grow flex flex-col items-center justify-center bg-muted/50 rounded-md m-6 mt-0">
         <div className="aspect-video w-full relative">
-          <video ref={videoRef} className="w-full h-full object-cover rounded-md" loop muted autoPlay playsInline key={videoSrc}>
-            <source src={videoSrc} type="video/mp4" />
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            className="w-full h-full object-cover rounded-md"
+            loop
+            muted
+            autoPlay
+            playsInline
+            crossOrigin="anonymous" // Important for capturing frames from external sources
+          >
             Your browser does not support the video tag.
           </video>
         </div>

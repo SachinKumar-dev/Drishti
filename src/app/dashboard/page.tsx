@@ -19,7 +19,6 @@ const videoSources = [
 
 export default function DashboardPage() {
     const [anomalies, setAnomalies] = useState<Anomaly[]>([])
-    const [incidents, setIncidents] = useState<any[]>([])
     const [summary, setSummary] = useState<IncidentSummary | null>(null)
     const [isDetecting, setIsDetecting] = useState(false)
     const [isSummarizing, setIsSummarizing] = useState(false)
@@ -38,17 +37,13 @@ export default function DashboardPage() {
         try {
             const result = await manageCrowdIncident({ cameraFeedDataUri });
             if (result.anomalies.length > 0) {
-                const newIncidents = result.anomalies.map(anomaly => ({
-                    id: `inc-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                const newAnomaliesWithLocation = result.anomalies.map(anomaly => ({
                     ...anomaly,
-                    timestamp: new Date().toISOString(),
-                    status: 'Active',
                     location,
                 }));
 
-                setAnomalies(prev => [...result.anomalies, ...prev].slice(0, 50));
-                setIncidents(prev => [...newIncidents, ...prev]);
-
+                setAnomalies(prev => [...newAnomaliesWithLocation, ...prev].slice(0, 50));
+                
                 toast({
                     title: 'Anomaly Detected!',
                     description: `${result.anomalies.map(a => a.type).join(', ')} at ${location}.`,
@@ -75,7 +70,7 @@ export default function DashboardPage() {
         setIsSummarizing(true);
         
         const anomaliesSummary = anomalies.length > 0 
-            ? `Detected anomalies include: ${[...new Set(anomalies.map(a => a.type))].join(', ')}.`
+            ? `Detected anomalies include: ${[...new Set(anomalies.map(a => a.type))].join(', ')} at various locations.`
             : "No specific anomalies detected in the recent feeds.";
 
         const incidentData = {
