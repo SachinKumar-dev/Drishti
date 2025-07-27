@@ -6,6 +6,8 @@ export type IncidentSummary = SummarizeIncidentOutput;
 
 export type IncidentStatus = "Pending" | "Acknowledged" | "Escalated" | "Archived";
 
+export type IncidentSource = "QR Report" | "Mock Data";
+
 export type Incident = {
     id: string;
     userName: string;
@@ -13,4 +15,5 @@ export type Incident = {
     details: string;
     timestamp: number; // Use number for Date.now()
     status: IncidentStatus;
+    source: IncidentSource;
 };

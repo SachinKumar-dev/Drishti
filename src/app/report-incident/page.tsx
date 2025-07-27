@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Loader2, MapPin, Send, AlertTriangle, User } from 'lucide-react';
 import { Logo } from '@/components/icons/logo';
+import type { Incident } from '@/lib/types';
+
 
 const reportIncidentSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -79,25 +81,41 @@ function ReportIncidentForm() {
     const onSubmit: SubmitHandler<ReportIncidentFormValues> = async (data) => {
         setIsLoading(true);
         try {
-        const result = await reportIncident({
-            userName: data.name,
-            incidentDetails: data.details,
-            location: data.location || 'Not provided',
-        });
-        toast({
-            title: "Alert Sent Successfully",
-            description: result.summary,
-        });
-        setIsSubmitted(true);
+            const result = await reportIncident({
+                userName: data.name,
+                incidentDetails: data.details,
+                location: data.location || 'Not provided',
+            });
+
+            // Create new incident and save to localStorage
+            const newIncident: Incident = {
+                id: result.alertId,
+                userName: data.name,
+                location: data.location || 'Not provided',
+                details: data.details,
+                timestamp: Date.now(),
+                status: 'Pending',
+                source: 'QR Report',
+            };
+            
+            const existingIncidents = JSON.parse(localStorage.getItem('incidents') || '[]') as Incident[];
+            localStorage.setItem('incidents', JSON.stringify([newIncident, ...existingIncidents]));
+
+
+            toast({
+                title: "Alert Sent Successfully",
+                description: result.summary,
+            });
+            setIsSubmitted(true);
         } catch (error) {
-        console.error('Error reporting incident:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Failed to Send Alert',
-            description: 'Could not send the alert. Please try again or find security personnel nearby.',
-        });
+            console.error('Error reporting incident:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Failed to Send Alert',
+                description: 'Could not send the alert. Please try again or find security personnel nearby.',
+            });
         } finally {
-        setIsLoading(false);
+            setIsLoading(false);
         }
     };
 

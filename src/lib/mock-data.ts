@@ -11,7 +11,8 @@ export const generateMockIncidents = (): Incident[] => {
             location: 'Sector A, near stage left', 
             details: 'A small fire has broken out near the power generator.',
             timestamp: now - 2 * 60 * 1000, // 2 minutes ago
-            status: 'Pending' 
+            status: 'Pending',
+            source: 'Mock Data'
         },
         { 
             id: 'inc-2', 
@@ -19,7 +20,8 @@ export const generateMockIncidents = (): Incident[] => {
             location: 'Lat: 40.7128, Lon: -74.0060', 
             details: 'Medical emergency, an attendee has collapsed and is unresponsive.',
             timestamp: now - 8 * 60 * 1000, // 8 minutes ago
-            status: 'Escalated' 
+            status: 'Escalated',
+            source: 'Mock Data'
         },
         { 
             id: 'inc-3', 
@@ -27,7 +29,8 @@ export const generateMockIncidents = (): Incident[] => {
             location: 'East Entrance', 
             details: 'An unattended bag has been left near the main entrance for over 10 minutes.',
             timestamp: now - 15 * 60 * 1000, // 15 minutes ago
-            status: 'Acknowledged' 
+            status: 'Acknowledged',
+            source: 'Mock Data'
         },
         { 
             id: 'inc-4', 
@@ -35,7 +38,8 @@ export const generateMockIncidents = (): Incident[] => {
             location: 'Section 104, Row G', 
             details: 'A fight has broken out between two individuals.',
             timestamp: now - 30 * 60 * 1000, // 30 minutes ago
-            status: 'Archived' 
+            status: 'Archived',
+            source: 'Mock Data'
         },
          { 
             id: 'inc-5', 
@@ -43,7 +47,8 @@ export const generateMockIncidents = (): Incident[] => {
             location: 'Merchandise Booth 3', 
             details: 'Crowd is pushing towards the booth, creating a dangerous surge.',
             timestamp: now - 1 * 60 * 1000, // 1 minute ago
-            status: 'Pending' 
+            status: 'Pending',
+            source: 'Mock Data'
         },
     ];
 };

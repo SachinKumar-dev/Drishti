@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Archive } from "lucide-react";
+import { ShieldCheck, Archive, QrCode } from "lucide-react";
 import type { Incident, IncidentStatus } from "@/lib/types";
 import { generateMockIncidents } from "@/lib/mock-data";
 
@@ -26,18 +26,22 @@ const CountdownTimer = ({ timestamp, onComplete }: { timestamp: number, onComple
   const [timeLeft, setTimeLeft] = useState(ACKNOWLEDGEMENT_WINDOW_MS - (Date.now() - timestamp));
 
   useEffect(() => {
+    if (timeLeft <= 0) {
+      onComplete();
+      return;
+    }
+
     const interval = setInterval(() => {
       const newTimeLeft = ACKNOWLEDGEMENT_WINDOW_MS - (Date.now() - timestamp);
       if (newTimeLeft <= 0) {
         setTimeLeft(0);
-        onComplete();
         clearInterval(interval);
       } else {
         setTimeLeft(newTimeLeft);
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [timestamp, onComplete]);
+  }, [timestamp, onComplete, timeLeft]);
 
   const minutes = Math.floor((timeLeft / 1000) / 60);
   const seconds = Math.floor((timeLeft / 1000) % 60);
@@ -55,16 +59,28 @@ export default function IncidentsPage() {
 
   useEffect(() => {
     // Generate incidents on the client-side to avoid hydration mismatch
-    setIncidents(generateMockIncidents());
+    const mockIncidents = generateMockIncidents();
+    const storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]') as Incident[];
+    
+    // Combine and sort by timestamp, newest first
+    const allIncidents = [...storedIncidents, ...mockIncidents].sort((a, b) => b.timestamp - a.timestamp);
+    
+    setIncidents(allIncidents);
   }, []);
 
   const handleUpdateStatus = (id: string, status: IncidentStatus) => {
-    setIncidents(prev => prev.map(inc => inc.id === id ? { ...inc, status } : inc));
+    setIncidents(prev => {
+        const updatedIncidents = prev.map(inc => inc.id === id ? { ...inc, status } : inc);
+        const storedIncidents = updatedIncidents.filter(inc => inc.source === 'QR Report');
+        localStorage.setItem('incidents', JSON.stringify(storedIncidents));
+        return updatedIncidents;
+    });
   };
 
   const getSeverity = (details: string): "High" | "Medium" | "Low" => {
-    if (details.toLowerCase().includes('fire') || details.toLowerCase().includes('medical')) return 'High';
-    if (details.toLowerCase().includes('crowd') || details.toLowerCase().includes('security')) return 'Medium';
+    const lowerDetails = details.toLowerCase();
+    if (lowerDetails.includes('fire') || lowerDetails.includes('medical') || lowerDetails.includes('unresponsive')) return 'High';
+    if (lowerDetails.includes('crowd') || lowerDetails.includes('security') || lowerDetails.includes('fight') || lowerDetails.includes('unattended')) return 'Medium';
     return 'Low';
   }
 
@@ -114,7 +130,7 @@ export default function IncidentsPage() {
                 <TableBody>
                   {incidents.map((incident) => (
                     <TableRow key={incident.id} className={incident.status === 'Pending' || incident.status === 'Escalated' ? 'bg-muted/50' : ''}>
-                      <TableCell className="font-mono text-xs">{incident.id}</TableCell>
+                      <TableCell className="font-mono text-xs">{incident.id.substring(0, 7)}...</TableCell>
                       <TableCell>
                         <Badge variant={getSeverityVariant(getSeverity(incident.details))} className="capitalize">
                           {getSeverity(incident.details)}
@@ -122,7 +138,10 @@ export default function IncidentsPage() {
                       </TableCell>
                       <TableCell className="font-medium max-w-[300px] truncate">{incident.details}</TableCell>
                       <TableCell>{incident.location}</TableCell>
-                      <TableCell>{incident.userName}</TableCell>
+                      <TableCell className="flex items-center gap-2">
+                        {incident.source === 'QR Report' && <QrCode className="h-4 w-4 text-primary" />}
+                        {incident.userName}
+                      </TableCell>
                       <TableCell>{new Date(incident.timestamp).toLocaleString()}</TableCell>
                        <TableCell>
                         <div className="flex items-center gap-2">
