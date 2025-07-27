@@ -15,8 +15,39 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Incident } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { ShieldCheck, Archive } from "lucide-react";
+import type { Incident, IncidentStatus } from "@/lib/types";
 import { generateMockIncidents } from "@/lib/mock-data";
+
+const ACKNOWLEDGEMENT_WINDOW_MS = 30 * 1000; // 30 seconds for demo
+
+const CountdownTimer = ({ timestamp, onComplete }: { timestamp: number, onComplete: () => void }) => {
+  const [timeLeft, setTimeLeft] = useState(ACKNOWLEDGEMENT_WINDOW_MS - (Date.now() - timestamp));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTimeLeft = ACKNOWLEDGEMENT_WINDOW_MS - (Date.now() - timestamp);
+      if (newTimeLeft <= 0) {
+        setTimeLeft(0);
+        onComplete();
+        clearInterval(interval);
+      } else {
+        setTimeLeft(newTimeLeft);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timestamp, onComplete]);
+
+  const minutes = Math.floor((timeLeft / 1000) / 60);
+  const seconds = Math.floor((timeLeft / 1000) % 60);
+
+  return (
+    <span className={`font-mono text-xs ${timeLeft < 10000 ? 'text-destructive' : ''}`}>
+      {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+    </span>
+  );
+};
 
 
 export default function IncidentsPage() {
@@ -26,6 +57,10 @@ export default function IncidentsPage() {
     // Generate incidents on the client-side to avoid hydration mismatch
     setIncidents(generateMockIncidents());
   }, []);
+
+  const handleUpdateStatus = (id: string, status: IncidentStatus) => {
+    setIncidents(prev => prev.map(inc => inc.id === id ? { ...inc, status } : inc));
+  };
 
   const getSeverity = (details: string): "High" | "Medium" | "Low" => {
     if (details.toLowerCase().includes('fire') || details.toLowerCase().includes('medical')) return 'High';
@@ -46,6 +81,7 @@ export default function IncidentsPage() {
         case 'escalated': return 'destructive';
         case 'pending': return 'secondary';
         case 'acknowledged': return 'default';
+        case 'archived': return 'outline';
         default: return 'outline';
     }
   }
@@ -59,7 +95,7 @@ export default function IncidentsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Incident Log</CardTitle>
-              <CardDescription>A historical log of all detected and reported incidents.</CardDescription>
+              <CardDescription>A unified log of all detected and reported incidents.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -72,11 +108,12 @@ export default function IncidentsPage() {
                     <TableHead>Reported By</TableHead>
                     <TableHead>Timestamp</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {incidents.map((incident) => (
-                    <TableRow key={incident.id}>
+                    <TableRow key={incident.id} className={incident.status === 'Pending' || incident.status === 'Escalated' ? 'bg-muted/50' : ''}>
                       <TableCell className="font-mono text-xs">{incident.id}</TableCell>
                       <TableCell>
                         <Badge variant={getSeverityVariant(getSeverity(incident.details))} className="capitalize">
@@ -88,9 +125,29 @@ export default function IncidentsPage() {
                       <TableCell>{incident.userName}</TableCell>
                       <TableCell>{new Date(incident.timestamp).toLocaleString()}</TableCell>
                        <TableCell>
-                        <Badge variant={getStatusVariant(incident.status)} className="capitalize">
-                          {incident.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                            <Badge variant={getStatusVariant(incident.status)} className="capitalize">
+                                {incident.status}
+                            </Badge>
+                             {incident.status === 'Pending' && (
+                                <CountdownTimer 
+                                    timestamp={incident.timestamp} 
+                                    onComplete={() => handleUpdateStatus(incident.id, 'Escalated')}
+                                />
+                            )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                         {incident.status === 'Pending' && (
+                          <Button size="sm" onClick={() => handleUpdateStatus(incident.id, 'Acknowledged')}>
+                            <ShieldCheck className="mr-2 h-4 w-4" /> Acknowledge
+                          </Button>
+                        )}
+                        {(incident.status === 'Acknowledged' || incident.status === 'Escalated') && (
+                          <Button size="sm" variant="secondary" onClick={() => handleUpdateStatus(incident.id, 'Archived')}>
+                            <Archive className="mr-2 h-4 w-4" /> Archive
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
