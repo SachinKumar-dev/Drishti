@@ -1,73 +1,23 @@
-# .gitignore for Firebase Web App
-
-# General
-# ----------------------------------------------------------------
-# Ignore operating system files
-.DS_Store
-Thumbs.db
-._*
-
-# Ignore log files
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-firebase-debug.log*
-
-# Ignore environment variables files
-# These often contain sensitive API keys and secrets.
-# A .env.example file should be committed to show required variables.
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Dependencies
-# ----------------------------------------------------------------
-# Ignore node_modules, as dependencies should be installed via package manager.
-/node_modules
-
-# Build output
-# ----------------------------------------------------------------
-# Ignore compiled/transpiled/built output directories.
-# These are generated and can be very large.
-/build
-/dist
-/public
-/out
-/.next/
-
-# Firebase specific
-# ----------------------------------------------------------------
-# Ignore Firebase CLI's cache and local auth information.
+# Firebase files
 .firebase/
-
-# Ignore Firebase Hosting's auto-generated files.
-# The 'public' or 'build' directory is usually configured in firebase.json
-# and should be ignored (as covered in the 'Build output' section).
-
-# Ignore Firebase emulators data.
-# This can become very large and contains only local test data.
 .firebaserc
-firebase.json # Sometimes you might want to commit this, but if each developer has a different setup, it can be ignored.
-database.rules.json # Similar to firebase.json, commit if shared, ignore if local.
-firestore.rules
-firestore.indexes.json
-storage.rules
+firebase-debug.log
+firebase.json
 
-# IDE / Editor configuration
-# ----------------------------------------------------------------
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Node.js (functions)
+functions/node_modules/
+functions/lib/
+functions/*.log
+functions/.env
+functions/.env.*
 
-# Test reports
-# ----------------------------------------------------------------
-/coverage
-/reports
+# React frontend (if hosted via Firebase Hosting)
+**/node_modules/
+**/build/
+**/dist/
+**/lib/
 
+# Ignore macOS metadata files
+.DS_Store
+
+# Ignore environment 
