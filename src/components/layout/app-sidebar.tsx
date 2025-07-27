@@ -42,7 +42,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
           <Logo className="h-8 w-8 text-primary" />
-          <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden transition-all duration-300">SentinelAI</span>
+          <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden transition-all duration-300">Drishti.ai</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">

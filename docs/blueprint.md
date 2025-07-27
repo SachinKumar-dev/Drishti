@@ -1,4 +1,4 @@
-# **App Name**: SentinelAI
+# **App Name**: Drishti.ai
 
 ## Core Features:
 

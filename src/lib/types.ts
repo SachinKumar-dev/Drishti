@@ -3,3 +3,14 @@ import type { SummarizeIncidentOutput } from "@/ai/flows/summarize-incident";
 
 export type Anomaly = ManageCrowdIncidentOutput['anomalies'][number];
 export type IncidentSummary = SummarizeIncidentOutput;
+
+export type IncidentStatus = "Pending" | "Acknowledged" | "Escalated" | "Archived";
+
+export type Incident = {
+    id: string;
+    userName: string;
+    location: string;
+    details: string;
+    timestamp: number; // Use number for Date.now()
+    status: IncidentStatus;
+};

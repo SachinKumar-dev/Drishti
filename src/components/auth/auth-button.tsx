@@ -14,7 +14,7 @@ import {
 import { User, LogOut, Settings, UserCircle } from "lucide-react"
 
 export function AuthButton() {
-  const user = { name: "Admin User", email: "admin@sentinelai.com" }
+  const user = { name: "Admin User", email: "admin@Drishti.ai.com" }
 
   return (
     <DropdownMenu>

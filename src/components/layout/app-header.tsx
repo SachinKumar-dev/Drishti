@@ -11,7 +11,7 @@ export function AppHeader() {
       <div className="flex items-center gap-2">
         <SidebarTrigger className="lg:hidden" />
         <Logo className="hidden h-8 w-8 text-primary md:block" />
-        <h1 className="hidden text-xl font-semibold md:block">SentinelAI</h1>
+        <h1 className="hidden text-xl font-semibold md:block">Drishti.ai</h1>
       </div>
 
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">

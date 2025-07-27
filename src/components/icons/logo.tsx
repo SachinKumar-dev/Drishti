@@ -12,7 +12,7 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <title>SentinelAI Logo</title>
+      <title>Drishti.ai Logo</title>
       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
       <path d="M12 22V12"></path>
       <path d="M20 14.5c-2.22-2.22-4.44-4.44-8-4.5s-5.78 2.28-8 4.5"></path>

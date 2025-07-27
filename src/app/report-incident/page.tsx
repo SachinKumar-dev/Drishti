@@ -208,7 +208,7 @@ export default function ReportIncidentPage() {
         <div className="flex flex-col items-center justify-center min-h-screen bg-muted p-4">
             <div className="absolute top-4 left-4 flex items-center gap-2 text-foreground">
                 <Logo className="h-8 w-8 text-primary" />
-                <span className="font-semibold text-lg">SentinelAI</span>
+                <span className="font-semibold text-lg">Drishti.ai</span>
             </div>
             <ReportIncidentPageContent />
         </div>

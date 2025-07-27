@@ -15,17 +15,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Anomaly } from "@/lib/types";
-
-type Incident = Anomaly & { id: string; timestamp: string; status: string; };
-
-// Function to generate mock data. This will be called on the client.
-const generateMockIncidents = (): Incident[] => [
-  { id: 'inc-1', type: 'Crowd Surge', confidence: 0.95, location: 'Sector A', severity: 'High', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(), status: 'Active' },
-  { id: 'inc-2', type: 'Smoke', confidence: 0.82, location: 'Sector B', severity: 'Medium', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), status: 'Active' },
-  { id: 'inc-3', type: 'Medical Emergency', confidence: 0.98, location: 'Sector A', severity: 'High', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(), status: 'Resolved' },
-  { id: 'inc-4', type: 'Unattended Bag', confidence: 0.75, location: 'Sector C', severity: 'Low', timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), status: 'Archived' },
-];
+import type { Incident } from "@/lib/types";
+import { generateMockIncidents } from "@/lib/mock-data";
 
 
 export default function IncidentsPage() {
@@ -35,6 +26,12 @@ export default function IncidentsPage() {
     // Generate incidents on the client-side to avoid hydration mismatch
     setIncidents(generateMockIncidents());
   }, []);
+
+  const getSeverity = (details: string): "High" | "Medium" | "Low" => {
+    if (details.toLowerCase().includes('fire') || details.toLowerCase().includes('medical')) return 'High';
+    if (details.toLowerCase().includes('crowd') || details.toLowerCase().includes('security')) return 'Medium';
+    return 'Low';
+  }
 
   const getSeverityVariant = (severity: string): "destructive" | "secondary" | "default" | "outline" | null | undefined => {
     switch (severity.toLowerCase()) {
@@ -46,8 +43,9 @@ export default function IncidentsPage() {
 
   const getStatusVariant = (status: string): "destructive" | "secondary" | "default" | "outline" | null | undefined => {
     switch (status.toLowerCase()) {
-        case 'active': return 'destructive';
-        case 'resolved': return 'default';
+        case 'escalated': return 'destructive';
+        case 'pending': return 'secondary';
+        case 'acknowledged': return 'default';
         default: return 'outline';
     }
   }
@@ -60,17 +58,18 @@ export default function IncidentsPage() {
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           <Card>
             <CardHeader>
-              <CardTitle>Incidents</CardTitle>
-              <CardDescription>A log of all detected incidents and their status.</CardDescription>
+              <CardTitle>Incident Log</CardTitle>
+              <CardDescription>A historical log of all detected and reported incidents.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Incident ID</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Severity</TableHead>
+                    <TableHead>Details</TableHead>
                     <TableHead>Location</TableHead>
+                    <TableHead>Reported By</TableHead>
                     <TableHead>Timestamp</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
@@ -79,13 +78,14 @@ export default function IncidentsPage() {
                   {incidents.map((incident) => (
                     <TableRow key={incident.id}>
                       <TableCell className="font-mono text-xs">{incident.id}</TableCell>
-                      <TableCell className="font-medium capitalize">{incident.type}</TableCell>
                       <TableCell>
-                        <Badge variant={getSeverityVariant(incident.severity)} className="capitalize">
-                          {incident.severity}
+                        <Badge variant={getSeverityVariant(getSeverity(incident.details))} className="capitalize">
+                          {getSeverity(incident.details)}
                         </Badge>
                       </TableCell>
+                      <TableCell className="font-medium max-w-[300px] truncate">{incident.details}</TableCell>
                       <TableCell>{incident.location}</TableCell>
+                      <TableCell>{incident.userName}</TableCell>
                       <TableCell>{new Date(incident.timestamp).toLocaleString()}</TableCell>
                        <TableCell>
                         <Badge variant={getStatusVariant(incident.status)} className="capitalize">

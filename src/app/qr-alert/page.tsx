@@ -49,7 +49,7 @@ export default function QrAlertPage() {
         .replace("image/png", "image/octet-stream");
       let downloadLink = document.createElement("a");
       downloadLink.href = pngUrl;
-      downloadLink.download = `sentinelai-alert-qr-${userName}.png`;
+      downloadLink.download = `Drishti.ai-alert-qr-${userName}.png`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);

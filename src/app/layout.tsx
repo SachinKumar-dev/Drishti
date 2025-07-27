@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'SentinelAI',
+  title: 'Drishti.ai',
   description: 'AI-Powered Crowd Monitoring & Emergency Response System',
 };
 
