@@ -36,6 +36,7 @@ const CountdownTimer = ({ timestamp, onComplete }: { timestamp: number, onComple
       if (newTimeLeft <= 0) {
         setTimeLeft(0);
         clearInterval(interval);
+        onComplete();
       } else {
         setTimeLeft(newTimeLeft);
       }
@@ -63,7 +64,14 @@ export default function IncidentsPage() {
     const storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]') as Incident[];
     
     // Combine and sort by timestamp, newest first
-    const allIncidents = [...storedIncidents, ...mockIncidents].sort((a, b) => b.timestamp - a.timestamp);
+    const uniqueIncidents = new Map<string, Incident>();
+    [...storedIncidents, ...mockIncidents].forEach(incident => {
+        if (!uniqueIncidents.has(incident.id)) {
+            uniqueIncidents.set(incident.id, incident);
+        }
+    });
+
+    const allIncidents = Array.from(uniqueIncidents.values()).sort((a, b) => b.timestamp - a.timestamp);
     
     setIncidents(allIncidents);
   }, []);
