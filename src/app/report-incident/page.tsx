@@ -36,9 +36,9 @@ function ReportIncidentForm() {
     const form = useForm<ReportIncidentFormValues>({
         resolver: zodResolver(reportIncidentSchema),
         defaultValues: {
-        name: userNameFromQr,
-        details: "",
-        location: "",
+            name: userNameFromQr,
+            details: "",
+            location: "",
         },
     });
 
@@ -164,7 +164,7 @@ function ReportIncidentForm() {
                         <FormLabel>Your Location</FormLabel>
                         <FormControl>
                         <div className="flex gap-2">
-                            <Input placeholder="Location will appear here..." {...field} readOnly className="bg-muted"/>
+                            <Input placeholder="Click pin to get location..." {...field} readOnly className="bg-muted"/>
                             <Button type="button" variant="outline" onClick={handleGetLocation} disabled={isGettingLocation}>
                                 {isGettingLocation ? <Loader2 className="h-4 w-4 animate-spin"/> : <MapPin className="h-4 w-4"/>}
                             </Button>
@@ -195,11 +195,11 @@ function ReportIncidentForm() {
 }
 
 function ReportIncidentPageContent() {
-    return (
-        <Suspense fallback={<Card className="w-full max-w-lg h-[500px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></Card>}>
-            <ReportIncidentForm />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<Card className="w-full max-w-lg h-[500px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></Card>}>
+      <ReportIncidentForm />
+    </Suspense>
+  )
 }
 
 
