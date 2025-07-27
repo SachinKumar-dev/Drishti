@@ -65,7 +65,7 @@ export default function IncidentsPage() {
     
     // Combine and sort by timestamp, newest first
     const uniqueIncidents = new Map<string, Incident>();
-    [...storedIncidents, ...mockIncidents].forEach(incident => {
+    [...mockIncidents, ...storedIncidents].forEach(incident => {
         if (!uniqueIncidents.has(incident.id)) {
             uniqueIncidents.set(incident.id, incident);
         }
@@ -159,12 +159,18 @@ export default function IncidentsPage() {
                              {incident.status === 'Pending' && (
                                 <CountdownTimer 
                                     timestamp={incident.timestamp} 
-                                    onComplete={() => handleUpdateStatus(incident.id, 'Escalated')}
+                                    onComplete={() => {
+                                      // Check if status is still pending before escalating
+                                      const currentIncident = incidents.find(i => i.id === incident.id);
+                                      if (currentIncident && currentIncident.status === 'Pending') {
+                                        handleUpdateStatus(incident.id, 'Escalated');
+                                      }
+                                    }}
                                 />
                             )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
                          {incident.status === 'Pending' && (
                           <Button size="sm" onClick={() => handleUpdateStatus(incident.id, 'Acknowledged')}>
                             <ShieldCheck className="mr-2 h-4 w-4" /> Acknowledge
